@@ -232,7 +232,7 @@ Rate-limit behaviour was also measured against the live API:
 uv run zoho-connector probe-rate-limit --calls 120 --concurrency 5
 ```
 
-> ⚠️ This command bypasses the connector's own limiter on purpose and can get
+> This command bypasses the connector's own limiter on purpose and can get
 > the organization blocked for 30 minutes. Results are in
 > [docs/evidence/](docs/evidence/).
 
