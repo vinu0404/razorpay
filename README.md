@@ -27,7 +27,7 @@ questions against the live Zoho account, then the test suite. About 60 seconds.
 
 [Download as MP4](docs/demo/demo.mp4). The demo is reproducible: see [demo/](demo/)
 (`ask.py` runs one question through `claude -p` with this server as its only
-tool source; `demo.tape` is the [VHS](https://github.com/charmbracelet/vhs) script that recorded it).
+tool source
 
 ## Contents
 
