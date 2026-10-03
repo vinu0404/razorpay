@@ -1,0 +1,14 @@
+{
+  "run_at": "2026-10-03T05:47:14.879220+00:00",
+  "calls": 120,
+  "concurrency": 5,
+  "elapsed_seconds": 3.27,
+  "status_counts": {
+    "200": 120
+  },
+  "first_429_at_call": null,
+  "retry_after_header_present": false,
+  "first_429_headers": null,
+  "first_429_body": null,
+  "non_200_samples": []
+}

@@ -1,0 +1,476 @@
+{
+  "server": {
+    "name": "zoho-inventory",
+    "instructions": "Read-only access to a merchant's Zoho Inventory: sales orders, fulfilment\n(packages/shipments), item stock and customers. Orders paid through Razorpay\ncarry the Razorpay payment id (pay_...) in their reference number.\n\nGuidelines:\n- Start from a Razorpay payment id with find_order_by_payment_id.\n- These tools cannot create, change, cancel or refund anything. Recommend\n  actions to the human; never claim an action was taken.\n- Every call spends a shared daily API budget. Prefer specific lookups over\n  broad listings and do not poll.\n- On AUTH_REQUIRED or DAILY_BUDGET_EXHAUSTED errors, stop and tell the user.\n"
+  },
+  "tools": [
+    {
+      "name": "connection_status",
+      "title": "Connection status",
+      "description": "Check the Zoho connection: organization, data center, granted scopes and\n    remaining API budget. Use once at the start of a session or when other tools\n    fail with auth errors. Do not call repeatedly.",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {},
+        "title": "connection_statusArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "find_order_by_payment_id",
+      "title": "Find order by Razorpay payment id",
+      "description": "Find the Zoho sales order(s) whose reference number is this Razorpay payment id,\n    with line items, packages and shipment tracking.\n\n    Use first whenever the user gives a pay_ id (\"customer paid but didn't get the\n    order\", disputes, refund questions). Exact match only. found=false means no order\n    references this payment; it does NOT prove the payment failed. Check Razorpay\n    before telling the customer anything.",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {
+          "payment_id": {
+            "description": "Razorpay payment id, exactly as issued: 'pay_' + 14 characters.",
+            "title": "Payment Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_id"
+        ],
+        "title": "find_order_by_payment_idArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_sales_order",
+      "title": "Get sales order",
+      "description": "Full detail of one sales order: customer, Razorpay payment id, line items,\n    packages, shipments, invoice status. Use when you already know the order.\n    zoho_paid_status reflects Zoho invoices only, not Razorpay; ignore it for\n    payment questions.",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {
+          "salesorder_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Zoho salesorder_id (long numeric string). Give this or salesorder_number.",
+            "title": "Salesorder Id"
+          },
+          "salesorder_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Human order number, e.g. SO-00002. Give this or salesorder_id.",
+            "title": "Salesorder Number"
+          }
+        },
+        "title": "get_sales_orderArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_fulfilment_status",
+      "title": "Get fulfilment status",
+      "description": "Where an order is in fulfilment: awaiting_shipment / partially_shipped /\n    shipped / delivered, with days since order, carrier, tracking number and\n    delivery date. Use for \"where is my order\" and to gather delivery proof for a\n    dispute (evidence_available=true means tracking exists).",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {
+          "salesorder_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Zoho salesorder_id (long numeric string). Give this or salesorder_number.",
+            "title": "Salesorder Id"
+          },
+          "salesorder_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Human order number, e.g. SO-00002. Give this or salesorder_id.",
+            "title": "Salesorder Number"
+          }
+        },
+        "title": "get_fulfilment_statusArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_sales_orders",
+      "title": "List sales orders",
+      "description": "Page through sales orders, newest first, optionally filtered by fulfilment\n    state, customer and order-date range. Returns summaries; call get_sales_order\n    for detail. For the paid-but-not-shipped backlog use list_paid_unshipped_orders\n    instead.",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {
+          "fulfilment_state": {
+            "anyOf": [
+              {
+                "enum": [
+                  "draft",
+                  "awaiting_shipment",
+                  "partially_shipped",
+                  "shipped",
+                  "delivered",
+                  "void"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Only orders in this state.",
+            "title": "Fulfilment State"
+          },
+          "customer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Only this customer's orders (from search_customers).",
+            "title": "Customer Id"
+          },
+          "date_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Order date on/after, YYYY-MM-DD.",
+            "title": "Date From"
+          },
+          "date_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Order date on/before, YYYY-MM-DD.",
+            "title": "Date To"
+          },
+          "page": {
+            "default": 1,
+            "description": "Page number, starting at 1.",
+            "minimum": 1,
+            "title": "Page",
+            "type": "integer"
+          },
+          "per_page": {
+            "default": 25,
+            "description": "Results per page (max 50).",
+            "maximum": 50,
+            "minimum": 1,
+            "title": "Per Page",
+            "type": "integer"
+          }
+        },
+        "title": "list_sales_ordersArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_sales_orders",
+      "title": "Search sales orders",
+      "description": "Free-text order search when you only have a fragment (customer name, part of\n    an order number). Matching is partial and fuzzy, so confirm the right order with\n    the user. For a full Razorpay payment id use find_order_by_payment_id.",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {
+          "query": {
+            "description": "Text matched against order number, reference number and customer name.",
+            "minLength": 2,
+            "title": "Query",
+            "type": "string"
+          },
+          "limit": {
+            "default": 10,
+            "description": "Max results.",
+            "maximum": 50,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "search_sales_ordersArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_paid_unshipped_orders",
+      "title": "List paid but unshipped orders",
+      "description": "Orders that carry a Razorpay payment id but have not shipped yet, oldest\n    first, with days_waiting. Use for fulfilment-delay reviews and to pre-empt\n    \"paid but not received\" complaints and chargebacks.",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {
+          "min_days_waiting": {
+            "default": 0,
+            "description": "Only orders placed at least this many days ago.",
+            "minimum": 0,
+            "title": "Min Days Waiting",
+            "type": "integer"
+          }
+        },
+        "title": "list_paid_unshipped_ordersArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_items",
+      "title": "Search items",
+      "description": "Find catalogue items and their SKUs. Use to discover a SKU before\n    check_stock or get_item.",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Text matched against item name and SKU. Omit to list all.",
+            "title": "Query"
+          },
+          "page": {
+            "default": 1,
+            "minimum": 1,
+            "title": "Page",
+            "type": "integer"
+          },
+          "per_page": {
+            "default": 25,
+            "maximum": 50,
+            "minimum": 1,
+            "title": "Per Page",
+            "type": "integer"
+          }
+        },
+        "title": "search_itemsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_item",
+      "title": "Get item",
+      "description": "One item with price and stock breakdown (physical, committed, available for\n    new orders, shortfall).",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Zoho item_id. Give this or sku.",
+            "title": "Item Id"
+          },
+          "sku": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Exact SKU, e.g. JKT-L. Give this or item_id.",
+            "title": "Sku"
+          }
+        },
+        "title": "get_itemArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "check_stock",
+      "title": "Check stock",
+      "description": "Physical stock for several SKUs at once. available_for_new_orders below zero\n    (shortfall > 0) means open orders already exceed stock: explains stuck orders\n    and tells you whether a replacement can ship.",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {
+          "skus": {
+            "description": "Exact SKUs to check (max 10).",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Skus",
+            "type": "array"
+          }
+        },
+        "required": [
+          "skus"
+        ],
+        "title": "check_stockArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_customers",
+      "title": "Search customers",
+      "description": "Find customers to get a customer_id for list_sales_orders. Returns name,\n    email and outstanding balance only; phone numbers, addresses and tax ids are\n    never returned.",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Name or company text.",
+            "title": "Query"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Exact email; preferred when known.",
+            "title": "Email"
+          },
+          "limit": {
+            "default": 10,
+            "maximum": 50,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "title": "search_customersArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_customer",
+      "title": "Get customer",
+      "description": "One customer's summary (name, email, outstanding receivable).",
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "input_schema": {
+        "properties": {
+          "customer_id": {
+            "description": "Zoho customer id from search_customers or an order.",
+            "title": "Customer Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id"
+        ],
+        "title": "get_customerArguments",
+        "type": "object"
+      }
+    }
+  ]
+}

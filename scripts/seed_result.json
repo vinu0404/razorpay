@@ -1,0 +1,48 @@
+{
+  "items": {
+    "TSH-M": "4260047000000034180",
+    "MUG-SET": "4260047000000034206",
+    "JKT-L": "4260047000000039001",
+    "NBK-PK": "4260047000000038002",
+    "TOTE-01": "4260047000000038026"
+  },
+  "customers": {
+    "Asha Demo": "4260047000000034230",
+    "Ravi Demo": "4260047000000039011",
+    "Meera Demo": "4260047000000039020",
+    "Karan Demo": "4260047000000038050",
+    "Neha Demo": "4260047000000038059"
+  },
+  "orders": [
+    {
+      "salesorder_id": "4260047000000034239",
+      "salesorder_number": "SO-00001",
+      "reference_number": "pay_TjJrWWgj7jAttQ",
+      "target": "shipped"
+    },
+    {
+      "salesorder_id": "4260047000000038085",
+      "salesorder_number": "SO-00002",
+      "reference_number": "pay_TjJrIOvtskFJU8",
+      "target": "confirmed"
+    },
+    {
+      "salesorder_id": "4260047000000039040",
+      "salesorder_number": "SO-00003",
+      "reference_number": "pay_TjJr1DLusM3dSE",
+      "target": "confirmed"
+    },
+    {
+      "salesorder_id": "4260047000000039053",
+      "salesorder_number": "SO-00004",
+      "reference_number": "pay_TjJqSqc2PW0zCs",
+      "target": "delivered"
+    },
+    {
+      "salesorder_id": "4260047000000034275",
+      "salesorder_number": "SO-00005",
+      "reference_number": "pay_TjJpRryFu6TZAu",
+      "target": "confirmed"
+    }
+  ]
+}
