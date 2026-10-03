@@ -20,8 +20,8 @@ questions like:
 
 ## Demo
 
-An agent (Claude, connected to this MCP server) answering three merchant
-questions against the live Zoho account, then the test suite. About 60 seconds.
+An agent (Claude, connected to this MCP server) answering six merchant
+questions against the live Zoho account, then the test suite. About 90 seconds.
 
 ![Demo](docs/demo/demo.gif)
 

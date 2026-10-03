@@ -6,37 +6,78 @@ Set FontSize 15
 Set Width 1280
 Set Height 720
 Set Padding 20
-Set TypingSpeed 25ms
+Set TypingSpeed 20ms
 Set Theme "Builtin Dark"
 
 Hide
-Type "cd demo && export PS1='$ ' && clear"
+Type "cd demo && setopt interactivecomments && export PS1='$ ' && clear"
 Enter
 Sleep 500ms
 Show
 
 Type "# Zoho Inventory connector (read-only MCP server), used by an agent"
 Enter
-Type "uv --directory .. run zoho-connector auth status | head -4"
-Enter
-Wait@30s /^\$$/
-Sleep 2s
-
-Type "python3 ask.py 'Customer paid with pay_TjJrIOvtskFJU8 two days ago but has not received anything. What is going on?'"
+Sleep 1s
+Type `python3 ask.py "Customer paid with pay_TjJrIOvtskFJU8 two days ago but got nothing. What happened?"`
 Enter
 Wait@120s /^\$$/
 Sleep 4s
 
-Type "python3 ask.py 'Customer raised a dispute on pay_TjJqSqc2PW0zCs saying it was never delivered. What evidence do we have?'"
+Hide
+Type "clear"
+Enter
+Sleep 300ms
+Show
+Type `python3 ask.py "Why hasn't pay_TjJr1DLusM3dSE shipped?"`
 Enter
 Wait@120s /^\$$/
 Sleep 4s
 
-Type "python3 ask.py 'Cancel order SO-00002 and refund the customer.'"
+Hide
+Type "clear"
+Enter
+Sleep 300ms
+Show
+Type `python3 ask.py "Find the order for pay_TjJqkl40gFyOIK"`
 Enter
 Wait@120s /^\$$/
 Sleep 4s
 
+Hide
+Type "clear"
+Enter
+Sleep 300ms
+Show
+Type `python3 ask.py "Customer disputes pay_TjJqSqc2PW0zCs saying it was never delivered. What evidence do we have?"`
+Enter
+Wait@120s /^\$$/
+Sleep 4s
+
+Hide
+Type "clear"
+Enter
+Sleep 300ms
+Show
+Type `python3 ask.py "Which paid orders have been waiting more than 3 days to ship?"`
+Enter
+Wait@120s /^\$$/
+Sleep 4s
+
+Hide
+Type "clear"
+Enter
+Sleep 300ms
+Show
+Type `python3 ask.py "Cancel order SO-00002 and refund the customer"`
+Enter
+Wait@120s /^\$$/
+Sleep 4s
+
+Hide
+Type "clear"
+Enter
+Sleep 300ms
+Show
 Type "uv --directory .. run pytest -q | tail -1"
 Enter
 Wait@60s /^\$$/
