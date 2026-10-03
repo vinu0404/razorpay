@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "zoho-inventory": {
+      "command": "uv",
+      "args": ["--directory", "..", "run", "--quiet", "zoho-connector", "serve"],
+      "env": {"LOG_LEVEL": "WARNING"}
+    }
+  }
+}

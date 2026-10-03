@@ -20,6 +20,9 @@ The 429 response:
 - **`Retry-After: 1800`** — the header *is* sent (third-party guides claim it is not), and the penalty is a **30-minute block of the whole organization**, not a short backoff.
 - Every response carries daily-quota headers: `x-rate-limit-limit: 7500` (trial), `x-rate-limit-remaining`, `x-rate-limit-reset` (seconds to reset; reset lands at midnight IST, the org time zone).
 
+In this run the block was lifted after about 17 minutes, earlier than the
+`Retry-After: 1800` value, so the header behaves like an upper bound.
+
 Design consequences (implemented):
 - Client-side per-minute limiter is essential, not optional: overshooting costs 30 minutes of downtime for every API consumer of the org.
 - 429 with a long Retry-After is **not retried**; all further calls fail fast with `RATE_LIMITED` + seconds remaining instead of hanging or extending the block.

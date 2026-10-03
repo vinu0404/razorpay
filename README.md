@@ -18,6 +18,17 @@ questions like:
 - "Which paid orders have not shipped for more than 3 days?"
 - "Do we have proof of delivery for this disputed payment?"
 
+## Demo
+
+An agent (Claude, connected to this MCP server) answering three merchant
+questions against the live Zoho account, then the test suite. About 60 seconds.
+
+![Demo](docs/demo/demo.gif)
+
+[Download as MP4](docs/demo/demo.mp4). The demo is reproducible: see [demo/](demo/)
+(`ask.py` runs one question through `claude -p` with this server as its only
+tool source; `demo.tape` is the [VHS](https://github.com/charmbracelet/vhs) script that recorded it).
+
 ## Contents
 
 | Document | What it covers |
